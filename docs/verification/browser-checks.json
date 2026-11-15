@@ -1,0 +1,310 @@
+{
+  "date": "2026-11-15",
+  "runtime": "Node 24.22.3",
+  "viewports": [
+    {
+      "path": "/",
+      "width": 320,
+      "scrollWidth": 320,
+      "overflow": false,
+      "images": [
+        {
+          "alt": "Ronak Singh",
+          "loaded": true
+        }
+      ],
+      "unnamedLinks": 0,
+      "resume": [
+        "https://drive.google.com/file/d/1bRzhuKpuoDCWDBCmT0J01IWeWIstZQ5s/view?usp=drivesdk",
+        "https://drive.google.com/file/d/1bRzhuKpuoDCWDBCmT0J01IWeWIstZQ5s/view?usp=drivesdk"
+      ]
+    },
+    {
+      "path": "/",
+      "width": 390,
+      "scrollWidth": 390,
+      "overflow": false,
+      "images": [
+        {
+          "alt": "Ronak Singh",
+          "loaded": true
+        }
+      ],
+      "unnamedLinks": 0,
+      "resume": [
+        "https://drive.google.com/file/d/1bRzhuKpuoDCWDBCmT0J01IWeWIstZQ5s/view?usp=drivesdk",
+        "https://drive.google.com/file/d/1bRzhuKpuoDCWDBCmT0J01IWeWIstZQ5s/view?usp=drivesdk"
+      ]
+    },
+    {
+      "path": "/",
+      "width": 768,
+      "scrollWidth": 768,
+      "overflow": false,
+      "images": [
+        {
+          "alt": "Ronak Singh",
+          "loaded": true
+        }
+      ],
+      "unnamedLinks": 0,
+      "resume": [
+        "https://drive.google.com/file/d/1bRzhuKpuoDCWDBCmT0J01IWeWIstZQ5s/view?usp=drivesdk",
+        "https://drive.google.com/file/d/1bRzhuKpuoDCWDBCmT0J01IWeWIstZQ5s/view?usp=drivesdk"
+      ]
+    },
+    {
+      "path": "/",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overflow": false,
+      "images": [
+        {
+          "alt": "Ronak Singh",
+          "loaded": true
+        }
+      ],
+      "unnamedLinks": 0,
+      "resume": [
+        "https://drive.google.com/file/d/1bRzhuKpuoDCWDBCmT0J01IWeWIstZQ5s/view?usp=drivesdk",
+        "https://drive.google.com/file/d/1bRzhuKpuoDCWDBCmT0J01IWeWIstZQ5s/view?usp=drivesdk"
+      ]
+    },
+    {
+      "path": "/work/ashsovereign",
+      "width": 320,
+      "scrollWidth": 320,
+      "overflow": false,
+      "images": [
+        {
+          "alt": "Original portfolio page: portrait, icon navigation, broad introduction, and resource links inside a gray card.",
+          "loaded": true
+        }
+      ],
+      "unnamedLinks": 0,
+      "resume": [
+        "https://drive.google.com/file/d/1bRzhuKpuoDCWDBCmT0J01IWeWIstZQ5s/view?usp=drivesdk"
+      ]
+    },
+    {
+      "path": "/work/ashsovereign",
+      "width": 390,
+      "scrollWidth": 390,
+      "overflow": false,
+      "images": [
+        {
+          "alt": "Original portfolio page: portrait, icon navigation, broad introduction, and resource links inside a gray card.",
+          "loaded": true
+        }
+      ],
+      "unnamedLinks": 0,
+      "resume": [
+        "https://drive.google.com/file/d/1bRzhuKpuoDCWDBCmT0J01IWeWIstZQ5s/view?usp=drivesdk"
+      ]
+    },
+    {
+      "path": "/work/ashsovereign",
+      "width": 768,
+      "scrollWidth": 768,
+      "overflow": false,
+      "images": [
+        {
+          "alt": "Original portfolio page: portrait, icon navigation, broad introduction, and resource links inside a gray card.",
+          "loaded": true
+        }
+      ],
+      "unnamedLinks": 0,
+      "resume": [
+        "https://drive.google.com/file/d/1bRzhuKpuoDCWDBCmT0J01IWeWIstZQ5s/view?usp=drivesdk"
+      ]
+    },
+    {
+      "path": "/work/ashsovereign",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overflow": false,
+      "images": [
+        {
+          "alt": "Original portfolio page: portrait, icon navigation, broad introduction, and resource links inside a gray card.",
+          "loaded": true
+        }
+      ],
+      "unnamedLinks": 0,
+      "resume": [
+        "https://drive.google.com/file/d/1bRzhuKpuoDCWDBCmT0J01IWeWIstZQ5s/view?usp=drivesdk"
+      ]
+    }
+  ],
+  "keyboard": {
+    "/": [
+      {
+        "label": "Skip to content",
+        "href": "#main-content",
+        "outline": "solid"
+      },
+      {
+        "label": "AshSovereign home",
+        "href": "/#home",
+        "outline": "solid"
+      },
+      {
+        "label": "Work",
+        "href": "/#work",
+        "outline": "solid"
+      },
+      {
+        "label": "Life",
+        "href": "/#life",
+        "outline": "solid"
+      },
+      {
+        "label": "Contact",
+        "href": "/#contact",
+        "outline": "solid"
+      },
+      {
+        "label": "Résumé ↗",
+        "href": "https://drive.google.com/file/d/1bRzhuKpuoDCWDBCmT0J01IWeWIstZQ5s/view?usp=drivesdk",
+        "outline": "solid"
+      },
+      {
+        "label": "Explore my work ↓",
+        "href": "#work",
+        "outline": "solid"
+      },
+      {
+        "label": "View résumé↗",
+        "href": "https://drive.google.com/file/d/1bRzhuKpuoDCWDBCmT0J01IWeWIstZQ5s/view?usp=drivesdk",
+        "outline": "solid"
+      },
+      {
+        "label": "Ronak on GitHub",
+        "href": "https://github.com/ronaksingh27",
+        "outline": "solid"
+      },
+      {
+        "label": "Ronak on LinkedIn",
+        "href": "https://www.linkedin.com/in/ronak-singh-59656a236/",
+        "outline": "solid"
+      },
+      {
+        "label": "Ronak on Instagram",
+        "href": "https://www.instagram.com/ronak270802/",
+        "outline": "solid"
+      },
+      {
+        "label": "AshSovereign: a personal home, with purpose ↗",
+        "href": "/work/ashsovereign",
+        "outline": "solid"
+      },
+      {
+        "label": "Read the case study →",
+        "href": "/work/ashsovereign",
+        "outline": "solid"
+      },
+      {
+        "label": "See my Ooty photograph↗",
+        "href": "https://500px.com/photo/1106187294/ooty-by-ronak-singh.com",
+        "outline": "solid"
+      },
+      {
+        "label": "Discourses, I.15",
+        "href": "https://en.wikisource.org/wiki/The_Works_of_Epictetus%2C_His_Discourses%2C_in_Four_Books%2C_the_Enchiridion%2C_and_Fragments/Book_1/Chapter_15",
+        "outline": "solid"
+      },
+      {
+        "label": "Email Ronak↗",
+        "href": "mailto:ronaksingh2708@gmail.com",
+        "outline": "solid"
+      },
+      {
+        "label": "Connect on LinkedIn↗",
+        "href": "https://www.linkedin.com/in/ronak-singh-59656a236/",
+        "outline": "solid"
+      },
+      {
+        "label": "Explore my GitHub↗",
+        "href": "https://github.com/ronaksingh27",
+        "outline": "solid"
+      },
+      {
+        "label": "Back to top ↑",
+        "href": "#top",
+        "outline": "solid"
+      }
+    ],
+    "/work/ashsovereign": [
+      {
+        "label": "Skip to content",
+        "href": "#main-content",
+        "outline": "solid"
+      },
+      {
+        "label": "AshSovereign home",
+        "href": "/#home",
+        "outline": "solid"
+      },
+      {
+        "label": "Work",
+        "href": "/#work",
+        "outline": "solid"
+      },
+      {
+        "label": "Life",
+        "href": "/#life",
+        "outline": "solid"
+      },
+      {
+        "label": "Contact",
+        "href": "/#contact",
+        "outline": "solid"
+      },
+      {
+        "label": "Résumé ↗",
+        "href": "https://drive.google.com/file/d/1bRzhuKpuoDCWDBCmT0J01IWeWIstZQ5s/view?usp=drivesdk",
+        "outline": "solid"
+      },
+      {
+        "label": "← Back to selected work",
+        "href": "/#work",
+        "outline": "solid"
+      },
+      {
+        "label": "Inspect the starting source",
+        "href": "https://github.com/ronaksingh27/LitRunner/tree/8d5f0918e1463e5ace572ac12078279a4e73e887",
+        "outline": "solid"
+      },
+      {
+        "label": "Visit the source repository↗",
+        "href": "https://github.com/ronaksingh27/LitRunner",
+        "outline": "solid"
+      },
+      {
+        "label": "Back to top ↑",
+        "href": "#top",
+        "outline": "solid"
+      }
+    ]
+  },
+  "refactor": [
+    {
+      "path": "/",
+      "textMatchesExpected": true,
+      "titleUnchanged": true,
+      "linksMatchExpected": true,
+      "imagesUnchanged": true,
+      "heightBefore": 1894,
+      "heightAfter": 1894
+    },
+    {
+      "path": "/work/ashsovereign",
+      "textMatchesExpected": true,
+      "titleUnchanged": true,
+      "linksMatchExpected": true,
+      "imagesUnchanged": true,
+      "heightBefore": 3003,
+      "heightAfter": 3003
+    }
+  ],
+  "scope": "Local production build; not deployed."
+}

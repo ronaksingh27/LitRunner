@@ -1,0 +1,96 @@
+{
+  "date": "2026-11-15",
+  "vulnerabilities": {
+    "info": 0,
+    "low": 0,
+    "moderate": 8,
+    "high": 0,
+    "critical": 0,
+    "total": 8
+  },
+  "remaining": {
+    "@typescript-eslint/eslint-plugin": {
+      "severity": "moderate",
+      "nodes": [
+        "node_modules/@typescript-eslint/eslint-plugin"
+      ],
+      "via": [
+        "@typescript-eslint/parser",
+        "@typescript-eslint/type-utils",
+        "@typescript-eslint/utils"
+      ]
+    },
+    "@typescript-eslint/parser": {
+      "severity": "moderate",
+      "nodes": [
+        "node_modules/@typescript-eslint/parser"
+      ],
+      "via": [
+        "@typescript-eslint/typescript-estree"
+      ]
+    },
+    "@typescript-eslint/type-utils": {
+      "severity": "moderate",
+      "nodes": [
+        "node_modules/@typescript-eslint/type-utils"
+      ],
+      "via": [
+        "@typescript-eslint/typescript-estree",
+        "@typescript-eslint/utils"
+      ]
+    },
+    "@typescript-eslint/typescript-estree": {
+      "severity": "moderate",
+      "nodes": [
+        "node_modules/@typescript-eslint/typescript-estree"
+      ],
+      "via": [
+        "minimatch"
+      ]
+    },
+    "@typescript-eslint/utils": {
+      "severity": "moderate",
+      "nodes": [
+        "node_modules/@typescript-eslint/utils"
+      ],
+      "via": [
+        "@typescript-eslint/typescript-estree"
+      ]
+    },
+    "glob": {
+      "severity": "moderate",
+      "nodes": [
+        "node_modules/sucrase/node_modules/glob"
+      ],
+      "via": [
+        {
+          "title": "Glob: AbortSignal cancellation bypass allows post-timeout filesystem traversal",
+          "url": "https://github.com/advisories/GHSA-3g3m-2fjr-6pw4"
+        },
+        "minimatch"
+      ]
+    },
+    "minimatch": {
+      "severity": "moderate",
+      "nodes": [
+        "node_modules/@typescript-eslint/typescript-estree/node_modules/minimatch",
+        "node_modules/sucrase/node_modules/minimatch"
+      ],
+      "via": [
+        {
+          "title": "minimatch has potential denial of service via globparts amplification",
+          "url": "https://github.com/advisories/GHSA-g3hv-75wg-m249"
+        }
+      ]
+    },
+    "sucrase": {
+      "severity": "moderate",
+      "nodes": [
+        "node_modules/sucrase"
+      ],
+      "via": [
+        "glob"
+      ]
+    }
+  }
+}
