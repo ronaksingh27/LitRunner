@@ -49,4 +49,8 @@ The original lockfile referenced an unreachable internal registry. Public packag
 
 ## Deployment
 
-No deployment was performed during this iteration. The current résumé URL was supplied and confirmed working by the owner. Independently check its anonymous access and the remaining content decisions before publishing; Google Drive was blocked in the verification browser. Set canonical URLs and an absolute sharing-image URL when the deployment domain is confirmed; no domain is invented in metadata.
+The portfolio is hosted at https://theashsovereign.duckdns.org/. See the [manual deployment guide](docs/ASHSOVEREIGN-DEPLOYMENT-GUIDE.txt) for Ubuntu, systemd, Nginx, DNS, HTTPS, updates, and troubleshooting.
+
+On 16 November 2026, owner-supplied terminal output confirmed the HTTP-to-HTTPS redirect, HTTPS homepage access after a VM reboot, and a successful certificate-renewal dry run with a scheduled renewal timer. The guide distinguishes these checks from remaining public-page and configuration checks.
+
+The current résumé URL was supplied and confirmed working by the owner. Independently check its anonymous access; Google Drive was blocked in the earlier verification browser. Canonical and absolute sharing-image metadata remain follow-up work.

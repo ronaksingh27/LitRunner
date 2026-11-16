@@ -1,5 +1,15 @@
 # AshSovereign portfolio — start here
 
+## Deployment documentation update — 16 November 2026
+
+This update supersedes the earlier undeployed status below. The owner manually deployed the site at https://theashsovereign.duckdns.org/ and requested publishing the deployment guide on `main`.
+
+- Added `docs/ASHSOVEREIGN-DEPLOYMENT-GUIDE.txt` and linked it from README. It includes the runtime, systemd and Nginx setup, DNS/firewalls, HTTPS, renewal, updates, troubleshooting, and request-flow explanations.
+- Owner-supplied output confirmed an HTTP 301 redirect to HTTPS and HTTPS homepage 200 after the final reboot, both services enabled/active, a successful Certbot renewal dry run, and a scheduled renewal timer.
+- The first reboot lost the web firewall allowance. Restoring it and saving with `netfilter-persistent` resolved the issue across a second reboot.
+- Public case-study/visual checks, DuckDNS token rotation, and exact final OCI rules remain unverified. A scheduled timer and successful simulation do not establish that an unattended production renewal has already occurred.
+- This publication changes documentation only. Deployment evidence comes from the owner's terminal output; no VM changes or independent live-site verification were performed in this documentation session. Whitespace/diff checks apply; application tests were not rerun for prose-only changes.
+
 Last updated: 15 November 2026 (Asia/Kolkata). Current brand: AshSovereign, formerly LitRunner. This checkpoint records local implementation and verification; it is not permission to publish or alter external services.
 
 ## Read first

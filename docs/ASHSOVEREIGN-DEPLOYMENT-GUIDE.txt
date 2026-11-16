@@ -1,0 +1,457 @@
+ASHSOVEREIGN: MANUAL DEPLOYMENT GUIDE
+Written: 16 November 2026
+Last updated: 16 November 2026, after successful reboot verification.
+
+Purpose
+Run the existing Next.js portfolio on an Ubuntu VM, with Nginx handling public
+HTTP/HTTPS and systemd keeping the app running. This is a deployment reference,
+not a script. Run commands individually and check each result before continuing.
+Commands run on the Ubuntu VM unless explicitly marked Mac or OCI Console.
+Nothing in this document has been executed as part of writing it.
+
+1. DEPLOYMENT DETAILS AND CURRENT CHECKPOINT
+
+Repository: https://github.com/ronaksingh27/LitRunner.git
+Deployment branch: improve-portfolio
+Recorded source commit: a2ff00662ed6de8ab048fd8d659d21de1ad35722
+VM user: ubuntu
+Last reported hostname: instance-20261116-1551
+App directory: /home/ubuntu/ashsovereign
+Node version pinned in .nvmrc: 24.22.3
+Expected Node executable: /home/ubuntu/.nvm/versions/node/v24.22.3/bin/node
+App address on VM: http://127.0.0.1:3000
+Public hostname: theashsovereign.duckdns.org
+Service name: ashsovereign
+Database: not required for the current app
+Application secrets: none required by the documented current app
+
+Current verified checkpoint (user-supplied terminal output):
+- Repository was cloned on the VM at the recorded commit.
+- Next.js returned HTTP 200 on VM loopback port 3000.
+- ashsovereign and nginx were both enabled and active under systemd.
+- Nginx configuration test passed. Listeners included 0.0.0.0:80 and :443;
+  Next.js listened on 127.0.0.1:3000.
+- DuckDNS resolved to 92.4.90.120. This is an observed DNS answer, not a fresh
+  independent comparison with the OCI Console's current public IP.
+- Certbot listed an ECDSA certificate for theashsovereign.duckdns.org, valid
+  until 14 February 2027 at 17:08:40 IST (11:38:40 UTC).
+- certbot renew --dry-run reported all simulated renewals succeeded.
+- snap.certbot.renew.timer had a scheduled next run. An actual unattended
+  production renewal has not yet been observed.
+- The first reboot exposed a missing host firewall allowance for 80/443.
+  Services and local HTTP recovered, but public connections were rejected.
+- After restoring web access, sudo netfilter-persistent save completed both
+  IPv4 and IPv6 save plugins. The user then rebooted again.
+- After that reboot, Mac curl checks returned HTTP 301 with Location pointing
+  to HTTPS, followed by HTTPS 200 OK, without bypassing certificate validation.
+  The response timestamp was 16 November 2026, 19:30:47 IST (14:00:47 UTC).
+- Public homepage access, HTTPS redirect, and recovery across reboot passed.
+
+These results were supplied by the user; the assistant did not operate or
+independently probe the VM while updating this document.
+Still unverified: case-study route over public HTTPS, rendered public pages
+and links, exact final OCI firewall configuration, and DuckDNS token rotation.
+The earlier public-access and certificate-issuance failures are resolved
+history, retained below as troubleshooting lessons.
+
+2. HOW REQUESTS REACH THE APP
+
+Visitor enters the hostname
+  -> DNS provides the VM public IP
+  -> OCI network rules allow incoming traffic
+  -> Ubuntu firewall allows incoming traffic
+  -> Nginx receives HTTP on port 80 or HTTPS on port 443
+  -> Nginx forwards to Next.js at 127.0.0.1:3000
+
+systemd starts Next.js after boot and restarts it after failures.
+Port 3000 stays bound to loopback; visitors use Nginx.
+127.0.0.1 always means the machine running the command. On your Mac it means
+your Mac; inside your SSH session it means the VM.
+
+3. CHECK THE MACHINE AND SOURCE
+
+Mac: replace VM_PUBLIC_IP with the current address from the OCI Console:
+  ssh -i ~/.ssh/oci-learning ubuntu@VM_PUBLIC_IP
+
+VM:
+  hostname
+  cat /etc/os-release
+  free -h
+  swapon --show
+  cd /home/ubuntu/ashsovereign
+  git status --short --branch
+  git log -1 --oneline
+  cat .nvmrc
+
+Load an existing nvm installation and select the repository's pinned runtime:
+  source /home/ubuntu/.nvm/nvm.sh
+  nvm install
+  nvm use
+  node --version
+  npm --version
+  command -v node
+
+If nvm is missing, install it using its official instructions first:
+https://github.com/nvm-sh/nvm#installing-and-updating
+
+The systemd configuration below assumes command -v node returns the expected
+absolute path recorded above. Adjust ExecStart if it differs. A future Node
+upgrade also requires updating that service path.
+
+For a replacement VM with no checkout yet:
+  git clone --branch improve-portfolio https://github.com/ronaksingh27/LitRunner.git /home/ubuntu/ashsovereign
+
+4. INSTALL, CHECK, AND BUILD
+
+If the app already runs from this directory, stop its service or foreground
+process first. npm ci replaces dependencies, and next build rewrites .next.
+Building in place causes downtime until the app is restarted.
+
+  cd /home/ubuntu/ashsovereign
+  nvm use
+  npm ci
+  npm run lint
+  npm run typecheck
+  npm run build
+
+Stop and investigate if any command fails. Do not start a failed build.
+For an initial smoke test, start the production server:
+  npm start -- --hostname 127.0.0.1
+
+In a second SSH session:
+  curl -I http://127.0.0.1:3000/
+  curl -I http://127.0.0.1:3000/work/ashsovereign
+
+Expected: HTTP 200 for both routes. Stop the foreground server with Ctrl+C
+before asking systemd to use the same port.
+
+5. KEEP THE APP RUNNING WITH SYSTEMD
+
+Create or edit the root-owned environment file:
+  sudo install -o root -g root -m 600 /dev/null /etc/ashsovereign.env
+  sudo nano /etc/ashsovereign.env
+
+The install command initializes an empty file: use it only when creating the
+file for the first time. On later edits, use nano directly to preserve values.
+File contents:
+  NODE_ENV=production
+  PORT=3000
+
+Create /etc/systemd/system/ashsovereign.service using sudo nano. Contents:
+
+[Unit]
+Description=AshSovereign Next.js portfolio
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/ashsovereign
+EnvironmentFile=/etc/ashsovereign.env
+ExecStart=/home/ubuntu/.nvm/versions/node/v24.22.3/bin/node /home/ubuntu/ashsovereign/node_modules/next/dist/bin/next start --hostname 127.0.0.1
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+
+Then:
+  sudo systemctl daemon-reload
+  sudo systemctl enable --now ashsovereign
+  sudo systemctl status ashsovereign --no-pager
+  curl -I http://127.0.0.1:3000/
+
+Expected: active (running) and HTTP 200. Read app logs with:
+  sudo journalctl -u ashsovereign -n 50 --no-pager
+
+6. CONFIGURE NGINX
+
+On a replacement VM, install Nginx if absent:
+  sudo apt update
+  sudo apt install nginx
+
+Create /etc/nginx/sites-available/ashsovereign using sudo nano. This is the
+initial HTTP configuration. After Certbot adds HTTPS, preserve its additions;
+do not overwrite the file with this HTTP-only version.
+
+server {
+    listen 80;
+    server_name theashsovereign.duckdns.org;
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+
+Enable it with a symlink only if that link is absent:
+  sudo ln -s /etc/nginx/sites-available/ashsovereign /etc/nginx/sites-enabled/ashsovereign
+
+An existing dangling link does not need recreation: create its missing target.
+Check before applying changes:
+  sudo nginx -t
+
+Only after the configuration test succeeds:
+  sudo systemctl enable --now nginx
+  sudo systemctl reload nginx
+  curl -I -H 'Host: theashsovereign.duckdns.org' http://127.0.0.1/
+
+Expected before HTTPS setup: HTTP 200 with Nginx forwarding to Next.js.
+
+7. DNS AND BOTH FIREWALLS
+
+OCI Console: find the CURRENT VM public IP. Update DuckDNS to that exact IP.
+Do not rely on old addresses in terminal history.
+
+Mac:
+  nslookup theashsovereign.duckdns.org
+
+Compare the returned address with OCI. If an IPv6/AAAA record is configured,
+it must also point to a working server; do not publish stale IPv6 records.
+
+OCI Console: inspect the security lists/NSGs actually attached to this VM.
+For a public IPv4 portfolio, allow stateful ingress with source ports left
+unrestricted and these destination ports:
+- TCP 22 from your current public IP /32, for SSH.
+- TCP 80 from 0.0.0.0/0, for HTTP and certificate validation.
+- TCP 443 from 0.0.0.0/0, for HTTPS.
+Keep SSH restricted. Do not open port 3000 publicly.
+
+VM: inspect the host firewall separately:
+  sudo ufw status verbose
+  sudo iptables -L INPUT -n -v --line-numbers
+  sudo ss -lntp
+
+Earlier failing host state: UFW inactive, but iptables INPUT had ACCEPT rules for
+established traffic, ICMP, loopback, and SSH, then a catch-all REJECT at rule 5.
+UFW being inactive does not mean iptables allows everything.
+
+Only if the CURRENT rules still match that layout and no equivalent web rule
+exists, insert the web allowance before the REJECT:
+  sudo iptables -I INPUT 5 -p tcp -m multiport --dports 80,443 -m conntrack --ctstate NEW -j ACCEPT
+
+Inspect the rules again. Do not repeatedly insert duplicates or reuse rule 5
+if the ordering has changed. Keep the existing SSH session open and verify
+a second SSH connection works before closing it.
+
+Persist the intended rules using the host's existing firewall manager. For
+the recorded iptables setup, if netfilter-persistent is already installed:
+  sudo netfilter-persistent save
+
+If absent, install iptables-persistent and review its save prompts, then save:
+  sudo apt install iptables-persistent
+  sudo netfilter-persistent save
+
+Do not enable/reset UFW or flush iptables as a shortcut.
+
+Verified lesson from this deployment: netfilter-persistent was already enabled,
+but the first reboot restored rules without the web allowance. Restoring the
+allowance fixed access; saving the rules and rebooting again preserved it.
+An enabled persistence service does not automatically save every live change.
+
+Mac, before retrying certificate issuance:
+  curl -I --connect-timeout 10 http://theashsovereign.duckdns.org/
+
+Expected: public HTTP 200 showing the portfolio, not just a local VM response.
+If this fails, fix DNS, routing, listeners, or firewall rules before Certbot.
+
+8. ENABLE HTTPS AND TEST RENEWAL
+
+Certbot is already present at /snap/bin/certbot in the reported deployment.
+For a replacement VM, follow the current official installation instructions:
+https://certbot.eff.org/instructions?ws=nginx&os=snap
+
+Once public HTTP works:
+  sudo /snap/bin/certbot --nginx --redirect -d theashsovereign.duckdns.org
+  sudo nginx -t
+  sudo /snap/bin/certbot certificates
+  sudo /snap/bin/certbot renew --dry-run
+  systemctl list-timers --all
+
+Check that the Certbot renewal timer is scheduled. A dry run tests renewal;
+it does not itself prove a recurring renewal job is enabled.
+
+Mac:
+  curl -I http://theashsovereign.duckdns.org/
+  curl -I https://theashsovereign.duckdns.org/
+  curl -I https://theashsovereign.duckdns.org/work/ashsovereign
+
+Expected: HTTP redirects to HTTPS; both HTTPS pages return 200 with normal
+certificate validation. Open them in a browser and check links and images.
+Keep port 80 reachable for this HTTP-01 renewal method.
+
+Certbot normally generates the server private key locally. Let's Encrypt
+checks domain control over HTTP, then issues a signed public certificate.
+Nginx uses that certificate and private key for browser TLS connections.
+Certificate issuance is separate from registering a Certbot/ACME account.
+
+After successful issuance, expected paths include:
+- /etc/letsencrypt/live/theashsovereign.duckdns.org/fullchain.pem
+- /etc/letsencrypt/live/theashsovereign.duckdns.org/privkey.pem
+
+Never paste the private key into chat or commit it. The previously exposed
+DuckDNS token should be regenerated and any updater using it updated; that
+rotation has not been confirmed. Store tokens outside source control.
+
+9. DEPLOY A LATER CODE UPDATE
+
+This simple procedure rebuilds in place and causes downtime. Plan for the
+site to be unavailable from the stop command until the successful restart.
+
+Before changing anything:
+  cd /home/ubuntu/ashsovereign
+  source /home/ubuntu/.nvm/nvm.sh
+  git status --short --branch
+  git rev-parse HEAD
+
+Record that commit as the last known working version. If there are local
+changes or the wrong branch is checked out, resolve that before pulling.
+
+  sudo systemctl stop ashsovereign
+  git pull --ff-only origin improve-portfolio
+  nvm install
+  nvm use
+  command -v node
+  npm ci
+  npm run lint
+  npm run typecheck
+  npm run build
+
+Proceed only if all checks passed. If the Node executable changed, update
+ExecStart and run sudo systemctl daemon-reload before starting the service.
+
+  sudo systemctl start ashsovereign
+  sudo systemctl status ashsovereign --no-pager
+  curl -I http://127.0.0.1:3000/
+  curl -I https://theashsovereign.duckdns.org/
+
+If the build fails, do not assume the old .next output remains usable.
+For recovery, with the service stopped and a clean checkout, check out the
+recorded working commit, install its pinned runtime/dependencies, and rebuild
+it successfully before starting. Record that detached checkout and return to
+the intended deployment branch before the next update. Do not reset or
+discard uncommitted work to force a rollback.
+
+10. REBOOT CHECK AND TROUBLESHOOTING
+
+Once the site works and firewall rules are persisted, perform a planned test:
+  sudo reboot
+
+Reconnect after the VM boots, then check:
+  sudo systemctl is-enabled ashsovereign nginx
+  sudo systemctl is-active ashsovereign nginx
+  sudo iptables -L INPUT -n --line-numbers
+  curl -I http://127.0.0.1:3000/
+
+Repeat the public HTTPS checks from the Mac. SSH disconnecting during reboot
+is expected; a successful public request afterward verifies more than an
+enabled-service setting alone.
+
+Useful diagnostics:
+  sudo journalctl -u ashsovereign -n 100 --no-pager
+  sudo tail -n 50 /var/log/nginx/error.log
+  sudo nginx -t
+  sudo ss -lntp
+  free -h
+  df -h
+
+Symptoms encountered:
+- Public access fails after reboot while services/local HTTP work: this
+  occurred here because the 80/443 allowance was absent from the restored
+  INPUT rules. Nginx still listened on both public web ports. Restoring the
+  allowance before REJECT, saving with netfilter-persistent, and testing a
+  second reboot resolved the issue. Do not blindly insert duplicate rules.
+- nginx -t reports missing sites-enabled/ashsovereign: the symlink target
+  file was missing. Create sites-available/ashsovereign, test, then reload.
+- Local Nginx works, public HTTP fails: check the DNS target and both firewall
+  layers. Local loopback requests can pass while remote traffic is rejected.
+- Nginx returns 502: check Next.js service, port 3000, and Nginx error logs.
+- Certbot connect timeout: HTTP-01 cannot reach the server. Establish public
+  HTTP before retrying. Account registration alone is not certificate success.
+- Bare next command not found: use npm start; npm adds local binaries to PATH.
+- SSH froze during a build: resource pressure was suspected, not established.
+  Check memory and kernel logs before claiming an out-of-memory failure:
+    sudo journalctl -k -b -1 --no-pager --grep='Out of memory|Killed process|oom'
+  Previous-boot logs may be unavailable. Do not copy macOS build output to a
+  Linux VM without accounting for native dependencies and CPU architecture.
+
+11. COMPLETION RECORD — 16 NOVEMBER 2026
+
+Final post-reboot response time: 19:30:47 IST (14:00:47 UTC).
+Source commit recorded at clone: a2ff00662ed6de8ab048fd8d659d21de1ad35722;
+  not re-read from the VM at the final verification.
+Observed DNS IPv4: 92.4.90.120; compare with OCI when diagnosing future changes.
+Expected Node executable: /home/ubuntu/.nvm/versions/node/v24.22.3/bin/node.
+App service and Nginx: enabled and active in supplied systemctl output.
+Public homepage: HTTPS HEAD request returned 200 after the final reboot.
+HTTP redirect: 301 to https://theashsovereign.duckdns.org/ after final reboot.
+Certificate: ECDSA; expires 14 February 2027, 17:08:40 IST (11:38:40 UTC).
+Renewal dry run: all simulated renewals succeeded.
+Renewal schedule: snap.certbot.renew.timer present with a scheduled next run;
+  production renewal not yet observed.
+Firewall persistence/reboot: save plugins succeeded; public HTTP/HTTPS worked
+  after the subsequent reboot without re-adding the rule.
+Public case-study route and browser visual checks: not yet recorded.
+DuckDNS token rotation: completion not yet confirmed.
+Exact final OCI rules: not supplied; successful tests establish connectivity
+  for the tested paths, not a complete firewall audit.
+
+12. EXTRA KNOWLEDGE: DNS, PORTS, AND THE REQUEST FLOW
+
+Default ports
+The URL scheme determines the default destination port when none is written:
+- http://example.com/ means HTTP on port 80.
+- https://example.com/ means HTTPS on port 443.
+- http://example.com:8080/ explicitly chooses port 8080.
+- https://example.com:8443/ explicitly chooses port 8443.
+These defaults are standardized conventions. The server must still have a
+service listening on that port, and the firewalls must allow the connection.
+
+DNS supplies the address, not the HTTP request destination port
+The browser looks up the hostname to obtain an IP address, possibly using a
+cached answer. It then connects to that server IP on the chosen port. The
+HTTP request goes to the web server; it is not sent to the DNS server.
+
+Starting with HTTP in this deployment
+1. Browser resolves theashsovereign.duckdns.org to its public IP.
+2. Browser connects to port 80 through the OCI and Ubuntu firewalls.
+3. Nginx receives the HTTP request and returns 301 with an HTTPS Location.
+4. Browser follows that location using HTTPS. Next.js does not handle the
+   initial redirect request.
+
+Why Nginx redirects
+The Certbot command's --redirect option configures Nginx to redirect HTTP.
+A typical generated directive is:
+  return 301 https://$host$request_uri;
+$host preserves the hostname; $request_uri preserves the path and query.
+Inspect /etc/nginx/sites-available/ashsovereign for the actual generated
+configuration. The exact deployed file contents were not pasted for review.
+
+HTTPS flow for the current Nginx setup
+1. Browser connects to the VM on port 443.
+2. In a full TLS handshake, Nginx presents its certificate and proves it has
+   the matching private key. The browser validates the certificate, and the
+   two sides establish encryption keys.
+3. Browser sends the HTTP request inside the encrypted TLS connection.
+4. Nginx decrypts it and proxies it over local HTTP to 127.0.0.1:3000.
+5. Next.js returns its response to Nginx.
+6. Nginx encrypts the response for the browser, which decrypts and displays it.
+
+  Browser <-- encrypted HTTPS --> Nginx <-- local HTTP --> Next.js
+                                  :443                 :3000
+
+CSS, JavaScript, and images can use the same browser-to-Nginx connection.
+A certificate is not revalidated for every HTTP request. A new full TLS
+handshake performs certificate authentication again; session resumption can
+use previously established trust without exchanging the certificate again.
+
+References
+Repository runtime and scripts: .nvmrc and package.json in the checkout.
+Certbot installation, Nginx integration, and renewal:
+https://certbot.eff.org/instructions?ws=nginx&os=snap
+OCI network security rules:
+https://docs.oracle.com/en-us/iaas/Content/Network/Concepts/securityrules.htm
