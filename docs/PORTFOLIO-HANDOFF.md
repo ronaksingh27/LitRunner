@@ -12,7 +12,7 @@ This update supersedes the earlier undeployed status below. The owner manually d
 - Public case-study/visual checks, DuckDNS token rotation, and exact final OCI rules remain unverified. A scheduled timer and successful simulation do not establish that an unattended production renewal has already occurred.
 - This publication changes documentation only. Deployment evidence comes from the owner's terminal output; no VM changes or independent live-site verification were performed in this documentation session. Whitespace/diff checks apply; application tests were not rerun for prose-only changes.
 
-Last updated: 15 November 2026 (Asia/Kolkata). Current brand: AshSovereign, formerly LitRunner. This checkpoint records local implementation and verification; it is not permission to publish or alter external services.
+Last updated: 16 November 2026 (Asia/Kolkata). Current brand: AshSovereign, formerly LitRunner. Dated sections below distinguish local work, GitHub publication, and owner-reported deployment evidence.
 
 ## Read first
 
@@ -130,3 +130,17 @@ The owner explicitly requested committing and pushing the portfolio changes, the
 - Inspected the new portrait at desktop and mobile sizes; it loaded successfully at 320, 390, 768, and 1440px with no horizontal overflow.
 - Fetched `origin`: remote `main` still matched the reviewed base, and no `origin/improve-portfolio` branch existed before this push.
 - Publish source to `origin/improve-portfolio`; do not merge into `main`, force-push, rename the repository, or deploy the website as part of this request. The remote hash is checked after pushing; the final result is recorded in the chat and the planning-directory checkpoint.
+
+## GA4 integration — 16 November 2026
+
+The owner supplied measurement ID `G-4DL4FN1PW9` and explicitly requested implementing and pushing analytics. This session continues from `origin/main` at `eb0f070`, which includes the merged portfolio and published deployment guide. The older branch/publication restrictions above describe the 15 November session.
+
+- Added exact-version `@next/third-parties` 15.5.29 to match Next.js, including its lockfile entries.
+- Root layout includes one shared `GoogleAnalytics` component in production only; development does not load the tag. The public measurement ID is in the layout, with no secret or additional VM environment variable.
+- Uses GA4's normal page measurement; no extra manual page events or custom click events. Client-side route measurement depends on the GA4 web stream's Enhanced measurement/history setting. README records setup and the difference between outbound résumé clicks and PDF download events.
+- Node 24.22.3: lint, typecheck, production build, and diff whitespace checks passed.
+- Production preview on localhost:3100: browser showed the correct tag URL and one initialization command for this ID. Homepage-to-case-study navigation retained exactly one analytics tag/configuration. Preview set Google's browser opt-out flag before loading to avoid sending test visits; GA4 dashboard receipt was not verified.
+- Inspected desktop (1440px) and mobile (390px) rendering. Both routes had no horizontal overflow at 390px. Keyboard Tab showed the skip link with a visible outline; Enter moved focus to `main-content`. No console warnings/errors were observed after case-study navigation.
+- Source publication only in this session. The running VM has not been updated with analytics. Owner-supplied deployment evidence in the guide already confirms public HTTPS, redirect, recovery after reboot, and a renewal dry run; those checks do not verify the new analytics build.
+
+Next: update the VM checkout to the published main revision, stop `ashsovereign` before rebuilding its existing `.next` directory (brief downtime), install lockfile dependencies, run checks/build, then restart and check the service. Verify collection in GA4 Realtime using the public website. Confirm the VM branch and clean state first; prior evidence placed it on `improve-portfolio`.

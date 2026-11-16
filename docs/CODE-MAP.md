@@ -16,6 +16,7 @@ Start here for a focused edit. Read `PORTFOLIO-HANDOFF.md` for the latest checks
 | Shared social icons and their accessible names | `src/components/SocialLinks.tsx` |
 | Responsive layout, colors, spacing, focus styles | `src/app/globals.css` |
 | Page title and sharing description | `src/app/layout.tsx`, case-study route metadata |
+| GA4 measurement ID and production-only tag | `src/app/layout.tsx` |
 | Routes and redirects | `src/app/**/page.tsx`, `next.config.ts` |
 
 The portrait source, dimensions, and alt text live in `portfolio.portrait`; the hero renders that record. The résumé URL has one source in `portfolio.ts`; the header and hero consume it. The current URL was supplied and confirmed by the owner. The repository is still named LitRunner on GitHub, so its source links retain that name.

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import "./globals.css";
 import { portfolio } from "@/content/portfolio";
 
@@ -21,6 +22,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <a className="skip-link" href="#main-content">Skip to content</a>
         {children}
       </body>
+      {process.env.NODE_ENV === "production" && (
+        <GoogleAnalytics gaId="G-4DL4FN1PW9" />
+      )}
     </html>
   );
 }

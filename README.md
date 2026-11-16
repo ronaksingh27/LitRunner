@@ -47,6 +47,14 @@ The case study explicitly records Codex assistance. It describes this site's imp
 
 The original lockfile referenced an unreachable internal registry. Public package URLs now use registry.npmjs.org. Next.js and its ESLint config are pinned to 15.5.29. Compatible overrides patch Next's nested PostCSS 8 and brace-expansion 1; keep them until upstream dependencies resolve to patched versions. See the handoff for the measured audit results and remaining development-tool advisories.
 
+## Visitor analytics
+
+The root layout loads Google Analytics 4 (`G-4DL4FN1PW9`) through `@next/third-parties/google` after hydration, on all routes in production only. `npm run dev` does not load the tag; a local `npm start` production preview does. The measurement ID is public configuration, and no analytics secret or VM environment variable is required.
+
+In the GA4 web stream, enable Enhanced measurement → Page views → Page changes based on browser history events to measure Next.js client-side navigation. Enhanced measurement also supports outbound-link clicks; the Google Drive résumé link is an outbound click, not an automatic PDF download event. No custom events are added here.
+
+After deploying the new build, open the public site and navigate to the case study, then check GA4's Realtime report. Browser tracking protection, ad blockers, and consent settings can prevent collection. Loading the tag locally is not proof that the Analytics property received events.
+
 ## Deployment
 
 The portfolio is hosted at https://theashsovereign.duckdns.org/. See the [project, deployment, and learning record](docs/ASHSOVEREIGN-DEPLOYMENT-GUIDE.txt) for the implementation history, architecture, verification evidence, Ubuntu/systemd/Nginx runbook, DNS and TLS explanations, troubleshooting, and a checklist for adapting the setup to another app. Its original filename is retained for existing links.
