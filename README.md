@@ -49,7 +49,7 @@ The original lockfile referenced an unreachable internal registry. Public packag
 
 ## Deployment
 
-The portfolio is hosted at https://theashsovereign.duckdns.org/. See the [manual deployment guide](docs/ASHSOVEREIGN-DEPLOYMENT-GUIDE.txt) for Ubuntu, systemd, Nginx, DNS, HTTPS, updates, and troubleshooting.
+The portfolio is hosted at https://theashsovereign.duckdns.org/. See the [project, deployment, and learning record](docs/ASHSOVEREIGN-DEPLOYMENT-GUIDE.txt) for the implementation history, architecture, verification evidence, Ubuntu/systemd/Nginx runbook, DNS and TLS explanations, troubleshooting, and a checklist for adapting the setup to another app. Its original filename is retained for existing links.
 
 On 16 November 2026, owner-supplied terminal output confirmed the HTTP-to-HTTPS redirect, HTTPS homepage access after a VM reboot, and a successful certificate-renewal dry run with a scheduled renewal timer. The guide distinguishes these checks from remaining public-page and configuration checks.
 

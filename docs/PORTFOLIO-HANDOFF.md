@@ -2,6 +2,8 @@
 
 ## Deployment documentation update — 16 November 2026
 
+The guide has since been expanded into a consolidated project, deployment, and learning record. It covers the portfolio's goals and code changes, dated local verification, hosting choices and estimates, runtime/web-server/reverse-proxy distinctions, firewall reasoning, certificate issuance and trust, connection reuse, troubleshooting, reusable setup steps, Git milestones, and open evidence gaps. The original filename is retained. Actual final VM configuration files were not supplied, so examples are explicitly labeled rather than presented as captured configurations. This expansion changes documentation only; application and VM behavior were not modified.
+
 This update supersedes the earlier undeployed status below. The owner manually deployed the site at https://theashsovereign.duckdns.org/ and requested publishing the deployment guide on `main`.
 
 - Added `docs/ASHSOVEREIGN-DEPLOYMENT-GUIDE.txt` and linked it from README. It includes the runtime, systemd and Nginx setup, DNS/firewalls, HTTPS, renewal, updates, troubleshooting, and request-flow explanations.

@@ -1,18 +1,31 @@
-ASHSOVEREIGN: MANUAL DEPLOYMENT GUIDE
+ASHSOVEREIGN: PROJECT, DEPLOYMENT, AND LEARNING RECORD
 Written: 16 November 2026
-Last updated: 16 November 2026, after successful reboot verification.
+Last updated: 16 November 2026, expanded after successful reboot verification.
 
-Purpose
-Run the existing Next.js portfolio on an Ubuntu VM, with Nginx handling public
-HTTP/HTTPS and systemd keeping the app running. This is a deployment reference,
-not a script. Run commands individually and check each result before continuing.
-Commands run on the Ubuntu VM unless explicitly marked Mac or OCI Console.
-Nothing in this document has been executed as part of writing it.
+Purpose and scope
+This is the consolidated record of the portfolio implementation, manual
+hosting exercise, debugging, decisions, and concepts available in the project
+files and conversations through 16 November 2026. It is a reusable reference,
+not a transcript or an executable script. Secrets are deliberately excluded.
+Evidence not supplied is marked unknown rather than reconstructed as fact.
+Run commands individually and check results. Deployment commands run on the
+Ubuntu VM unless marked Mac or OCI Console. Writing this record did not
+execute deployment commands or change the VM.
+
+How to use this record
+- Reproduce or operate the deployment: sections 1-11.
+- Understand requests, DNS, and ports: section 12.
+- Understand the project, code, and verification: sections 13-15.
+- Learn the runtime, networking, and TLS concepts: sections 16-19.
+- Diagnose failures or adapt the setup: sections 20-22.
+- Find milestones, open items, and evidence: sections 23-24.
+The existing filename is retained so repository links keep working.
 
 1. DEPLOYMENT DETAILS AND CURRENT CHECKPOINT
 
 Repository: https://github.com/ronaksingh27/LitRunner.git
-Deployment branch: improve-portfolio
+Original VM deployment branch: improve-portfolio
+Repository default branch: main (portfolio merged; documentation published)
 Recorded source commit: a2ff00662ed6de8ab048fd8d659d21de1ad35722
 VM user: ubuntu
 Last reported hostname: instance-20261116-1551
@@ -449,9 +462,557 @@ A certificate is not revalidated for every HTTP request. A new full TLS
 handshake performs certificate authentication again; session resumption can
 use previously established trust without exchanging the certificate again.
 
+
+13. WHY THIS PROJECT AND THIS HOSTING APPROACH
+
+Portfolio purpose
+AshSovereign is Ronak Singh's personal portfolio, evolved from LitRunner.
+The first release presents an early-career software engineering focus while
+retaining photography and personal identity. The scope is one homepage, one
+substantive case study, a Life section, resume access, and contact links.
+The brand changed; the GitHub repository remains ronaksingh27/LitRunner.
+
+The owner's brief asked for truthful engineering evidence, readable mobile
+layouts, keyboard access, working destinations, and modular code. A portfolio
+can support applications and interviews, but no measured hiring improvement
+was claimed. Future reflections and achievements must come from the owner.
+The public case study explicitly credits Codex assistance for implementation
+and verification; the owner supplied the brief, decisions, photo, and links.
+
+Starting question: what does Render do?
+Render can build and run application code from a connected repository and
+provide a public address. Managed hosting handles much of the provisioning,
+deployment, and infrastructure work. A custom purchased domain is separate
+from the platform-provided subdomain. Our exercise reproduced a small part of
+that hosting workflow manually; it did not build a replacement for Render.
+Source: https://render.com/docs/web-services
+
+Learning decision
+Manually hosting one existing app teaches Linux, SSH, processes, ports, DNS,
+TLS, logs, and troubleshooting. We deliberately started with one VM and one
+app. Docker and CI/CD were discussed as later learning steps; Kubernetes was
+not needed. No Docker/Kubernetes deployment was built in this exercise.
+
+Effort estimates discussed (planning judgments, not measured time)
+- Around 8-16 focused hours for a developer with two years of experience and
+  limited Linux/cloud experience; a weekend or 3-4 evenings.
+- Around 4-8 hours with relevant Linux/networking knowledge, or 16-24 hours
+  if these topics are new. DNS waiting time may add elapsed time.
+- These estimates assumed an existing small app. Databases, monitoring,
+  backups, and automated deployments would add work.
+- Earlier portfolio planning estimated roughly 6-10 focused hours to adapt
+  the existing frontend; that is separate from this hosting estimate.
+No actual total duration was measured, so these are not completion metrics.
+
+Low-cost options discussed
+The proposed stack was an OCI Always Free eligible Ubuntu VM, DuckDNS free
+subdomain, and Let's Encrypt certificate, with open-source Nginx/systemd.
+A local Ubuntu VM was offered as a no-card learning alternative. No bought
+custom domain was required. Actual OCI shape, account eligibility, usage,
+and billing were not verified, so this record does not certify a zero bill.
+The earlier advice noted card verification, possible authorization holds,
+capacity limits, and idle-instance reclamation. Recheck current provider
+terms before recreating the setup; these are not permanent price guarantees.
+Sources: https://www.oracle.com/cloud/free/faq/
+https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm
+https://www.duckdns.org/
+
+Why write this down?
+The guide makes it possible to rebuild a replacement VM, deploy an update,
+find logs, explain decisions, and recover after forgetting setup details.
+Versioned documentation retains both the successful procedure and the real
+failures that taught us why the procedure matters.
+
+14. WHAT WAS BUILT IN THE APPLICATION
+
+Original gaps
+The original app had a portrait and visual identity but a broad introduction,
+unfinished Portfolio/Profile interactions, placeholder resource links, a
+Medium account-management destination, and a fixed-height scrolling card.
+The homepage component was under src/pages, unintentionally exposing a route.
+
+Implemented changes recorded in the repository
+- Renamed the visible brand to AshSovereign, including shared identity data,
+  headings, metadata, monogram, footer, and case study.
+- Added a clear engineering introduction and Work/Life/Contact sections.
+- Used ordinary anchor links and document scrolling instead of stateful
+  navigation for static sections and a nested scrolling viewport.
+- Added /work/ashsovereign with the portfolio's own implementation case study,
+  ownership, tradeoffs, checks, limitations, and a before screenshot.
+- Removed empty destinations and placeholders; updated the owner-confirmed
+  resume and Instagram destinations; retained GitHub, LinkedIn, and email.
+- Added the supplied beach portrait and linked the owner's Ooty photograph
+  with an attributed Epictetus quotation. No personal reflection was invented.
+- Added semantic links, a skip link, visible focus, headings, descriptive
+  image alternatives, responsive layout, and page metadata.
+- Moved HomePage out of src/pages; retained redirects from /HomePage to /#home
+  and /work/litrunner to /work/ashsovereign.
+- Split homepage sections and shared components; centralized identity/links
+  and typed case-study content to make updates easier.
+- Normalized lockfile URLs to the public npm registry, updated compatible
+  dependencies, pinned a runtime, and documented checks and remaining issues.
+
+Code architecture (repository-relative paths)
+- src/app/page.tsx: homepage route.
+- src/app/work/ashsovereign/page.tsx: case-study route and metadata.
+- src/components/HomePage.tsx: composes Hero, WorkSection, LifeSection,
+  and ContactSection from src/components/home/.
+- src/components/SiteShell.tsx: shared Header, content, and Footer.
+- src/components/case-study/: CaseStudyView, Header, and Section components.
+- src/content/portfolio.ts: brand, owner, portrait, resume/social/contact links,
+  and case-study destination; edit identity information here.
+- src/content/case-studies.tsx: typed case-study records with JSX bodies.
+- src/app/globals.css: shared and responsive styling.
+- next.config.ts: legacy-route redirects.
+- public/images/: portrait and historical before screenshot.
+
+Stack and runtime recorded
+Next.js 15.5.29, React 19, TypeScript 5, Tailwind CSS 3, and React Icons.
+.nvmrc pins Node 24.22.3; package.json engines allow ^22.13.0 or ^24.0.0.
+The current app needs no database, CMS, custom server.js, or application API
+secrets. The production start script is next start. Homepage and case study
+were statically rendered during the recorded build, but this deployment still
+runs a Next.js server; it was not configured as a pure static export.
+
+Changing the app later
+Use docs/CODE-MAP.md for ownership boundaries. Add new case-study data, a thin
+route, and a Work preview rather than duplicating the whole page structure.
+For visible changes, verify mobile rendering, keyboard traversal, images,
+and destinations as well as lint, typecheck, and build.
+
+15. APPLICATION VERIFICATION AND ITS LIMITS
+
+Recorded local checks on 15 November 2026
+- npm ci, lint, typecheck, and production build passed on Node 24.22.3.
+- Homepage and case study were inspected at 320, 390, 768, and 1440px widths:
+  no horizontal overflow, images loaded, and no unnamed links were reported.
+- All 19 homepage links and 10 case-study links were keyboard reachable with
+  visible focus. Skip link, anchors, and case-study navigation were exercised.
+- Legacy redirects worked; final local browser checks reported no console
+  errors/warnings. Refactoring preserved intended content and layout behavior.
+- The replacement portrait was checked again on desktop and mobile.
+
+Dependency work
+The earlier handoff records a baseline of 14 affected packages (1 critical,
+10 high, 3 moderate). The saved final audit snapshot has 8 moderate findings
+in development tooling and zero high/critical findings. Compatible overrides
+address PostCSS and brace-expansion paths. This is a dated snapshot, not a
+claim that current dependencies have no vulnerabilities. Details and advisory
+links remain in docs/verification/dependency-audit.json.
+
+Evidence files
+- docs/verification/browser-checks.json: local layout, links, focus, refactor.
+- docs/verification/portrait-checks.json: replacement portrait checks.
+- docs/verification/dependency-audit.json: dated audit snapshot.
+- docs/PORTFOLIO-HANDOFF.md: local checks, owner choices, scope and limitations.
+
+Keep verification scopes distinct
+A local build pass does not prove public deployment. A public HEAD 200 proves
+an HTTP response and, without -k, successful curl TLS validation; it does not
+prove that every image, link, and interaction renders correctly. The final
+public case-study and visual checks remain unrecorded. No full screen-reader
+audit, browser/device lab, load test, or availability SLA was established.
+The resume was owner-confirmed; independent access in the earlier browser was
+blocked by administration, so anonymous availability was not independently
+established. Documentation updates did not rerun application tests.
+
+16. RUNTIME, WEB SERVER, AND REVERSE PROXY CONCEPTS
+
+JavaScript, React, Next.js, and Node.js
+JavaScript is the language. Browser JavaScript can interact with the page;
+Node.js runs JavaScript outside the browser with different APIs, including
+server-side filesystem and networking access. Same language does not mean
+the same APIs or access privileges.
+React describes UI using components. Next.js adds framework features such as
+routing, builds, rendering, and a production server. Node.js is the runtime
+executing that server. Websites can also be built with static HTML, server
+rendered templates, or browser-rendered React; Next.js combines useful
+capabilities but is not required for every website.
+
+A concise answer to "What is a web server?"
+A web server is software that receives HTTP/HTTPS requests from clients and
+sends responses, such as web pages, images, redirects, or data. "Server" can
+also mean a machine: here the VM is the machine, while Nginx and the Next.js
+HTTP server are programs running on it.
+
+Does "web" mean public?
+No. HTTP servers can be public, private-network-only, or loopback-only. The
+listening address, routing, and firewall rules determine accessibility.
+- 127.0.0.1:3000: Next.js is reachable from the VM itself.
+- 0.0.0.0:443: Nginx listens on all local IPv4 interfaces, but public access
+  still requires a routable address and permission through both firewalls.
+
+Is Nginx a web server or reverse proxy?
+Both. It is web-server software acting as a reverse proxy for the app. It is
+also the TLS termination point and handles the HTTP-to-HTTPS redirect.
+Nginx can serve static files, cache, and load-balance, but those roles were
+not configured or verified here. The observed Next.js cache HIT header is
+not proof of an Nginx proxy cache.
+
+Can an app use multiple web servers?
+Yes. Here Nginx listens on 80/443 and Next.js on 3000 on the same VM.
+Nginx stays in the middle of every proxied request and response, not just
+connection setup. The browser's HTTPS connection and Nginx's local HTTP
+connection to Next.js are separate connections. Only Nginx handles TLS in
+this setup. For a redirect, Nginx answers directly without calling Next.js.
+
+Processes and commands
+- nvm install/use reads the version in the current repository's .nvmrc.
+- npm ci installs the lockfile's dependency tree reproducibly.
+- npm run build generates production output under .next.
+- npm start invokes next start; npm adds local node_modules/.bin to PATH.
+  Bare next not found does not mean an unrelated Ubuntu package is needed.
+- systemd runs the app independently of an interactive SSH terminal.
+- enable configures startup at boot; start runs now; restart stops/starts;
+  daemon-reload rereads unit definitions after unit-file edits.
+- A system service does not automatically load interactive nvm shell setup,
+  hence the explicit absolute Node path in ExecStart.
+- nginx -t checks configuration; reload applies a valid changed configuration.
+
+17. FIREWALL REASONING FROM THE ACTUAL FAILURE
+
+The failing INPUT chain was evaluated top to bottom:
+1. ACCEPT RELATED,ESTABLISHED traffic.
+2. ACCEPT ICMP.
+3. ACCEPT traffic arriving on loopback (lo).
+4. ACCEPT NEW TCP connections to SSH port 22.
+5. REJECT everything else.
+
+A terminal ACCEPT or REJECT ends evaluation. The chain's default ACCEPT
+policy applies only when no earlier rule has decided the packet. The catch-
+all REJECT prevented new web connections from ever reaching that policy.
+Local curl succeeded through the loopback rule; remote HTTP/HTTPS failed.
+
+Connection tracking vocabulary
+- NEW: traffic starting a tracked connection; a new SSH connection needed
+  the port-22 rule, and new web connections needed a port-80/443 rule.
+- ESTABLISHED: traffic belonging to a tracked connection, including later
+  SSH packets and replies to a connection initiated by the VM.
+- RELATED: traffic related to another tracked connection, such as certain
+  ICMP errors. It does not mean arbitrary new traffic is trusted.
+INPUT handles traffic delivered to the host; OUTPUT is a separate chain.
+
+Why two firewall layers?
+OCI security lists/NSGs regulate traffic in the cloud network. Ubuntu's
+firewall regulates it on the VM. Permission at one layer does not bypass the
+other. Earlier OCI rules restricted web access to one source IP, which could
+exclude visitors and certificate validation servers. Final rule contents were
+not supplied, even though the successful public and renewal tests demonstrate
+that their tested paths became reachable.
+
+Why saving mattered
+iptables changes the running kernel rules. netfilter-persistent restores saved
+rules at boot. A service can be enabled and successfully load an outdated
+ruleset. Saving after the intended change and testing after a reboot proved
+persistence in this exercise. active (exited) is normal for a one-shot service
+that finished loading rules; it need not remain a continuously running process.
+
+18. CERTIFICATES: ISSUANCE, KEYS, TRUST, AND RENEWAL
+
+Issuance: Certbot and Let's Encrypt have different jobs
+Certbot is the ACME client on the VM. Let's Encrypt is the certificate
+authority. Certbot normally creates the website's private/public key pair
+locally. The certificate request contains the public key; the corresponding
+private key stays on the VM. The ACME account key is separate from the
+website's TLS key. Registering an ACME account does not issue a certificate.
+Source: https://letsencrypt.org/how-it-works/
+
+For the HTTP-01 method used here:
+1. Let's Encrypt supplies a challenge token.
+2. Certbot arranges for Nginx to serve a response derived from the token and
+   ACME account key at a special /.well-known/acme-challenge/ URL.
+3. Let's Encrypt independently resolves the hostname and requests that proof
+   over port 80. Nginx serves the proof; it does not solve a puzzle itself.
+4. Successful validation authorizes certificate issuance. The CA signs a
+   certificate for the hostname and public key.
+The first attempt timed out while retrieving the proof. Later issuance and
+renewal simulation succeeded. Keep port 80 reachable for this method; do not
+keep retrying issuance while the required endpoint cannot be reached.
+Source: https://letsencrypt.org/docs/challenge-types/
+
+Public certificate versus secret private key
+A certificate contains identity names, a public key, validity information,
+and an issuer signature. It can be shared publicly. The private key must
+remain secret. Nginx's privileged master can load protected key files.
+fullchain.pem contains the website certificate and intermediate chain;
+privkey.pem contains the secret key. Never paste or commit the private key.
+
+The domain/IP relationship
+A DNS-name certificate binds hostname(s) to a public key, not to one fixed IP.
+Changing the server's IP does not by itself invalidate that certificate/key.
+A hostname can have several valid certificates/keys, and a certificate can
+cover multiple names. Domain validation proves domain control, not that the
+website's content or operator is honest. DNS-account compromise can enable
+fraudulent domain validation; HTTPS is not a cure for account takeover.
+
+How the browser obtains the public keys and checks trust
+- Website public key: in the website certificate sent by Nginx.
+- Intermediate CA public key: in its certificate, normally sent by Nginx.
+- Trusted root CA public key: in the browser/OS trust store on the visitor's
+  device. Trust comes from that store, not from a root supplied by the server.
+The browser verifies the website certificate's signature using the issuer's
+public key, then follows the chain to a trusted root. It also checks dates,
+constraints, and usage. Multiple intermediate layers are possible. A root's
+self-signature alone does not establish trust.
+Source: https://www.rfc-editor.org/rfc/rfc5280.html
+The browser additionally checks that the requested hostname is covered.
+These signature checks are local calculations. Some clients may retrieve
+missing intermediates; revocation mechanisms may involve network access.
+There is no required per-request "please approve this" call to Let's Encrypt.
+
+Proof of possession and encrypted traffic
+A copied public certificate is insufficient to impersonate the server. During
+a full TLS 1.3 handshake, the server signs handshake data with its private key;
+the browser checks that proof with the certificate's public key. The handshake
+establishes traffic-encryption keys. The certificate itself is not the shared
+secret used to encrypt every response. Ordinary server TLS authenticates the
+server to the client, not the visitor's identity to the website.
+Source: https://www.rfc-editor.org/rfc/rfc8446.html#section-4.4.3
+
+Renewal versus browser verification
+Renewal obtains a replacement certificate through the CA. A browser handshake
+validates the certificate and server it encounters; it does not renew it or
+repeat HTTP-01. Certbot's timer periodically checks whether renewal is due;
+each timer run need not issue a certificate. A dry run exercises renewal with
+test infrastructure. Its success plus a scheduled timer is useful evidence,
+but an actual future production renewal remains to be observed.
+
+19. CONNECTION REUSE AND COMMON MISUNDERSTANDINGS
+
+When is the certificate checked again?
+- More HTTP requests over an existing connection: no new certificate exchange.
+- Refreshing the page: may reuse the connection; not necessarily a new check.
+- A new connection using accepted TLS resumption: can authenticate from the
+  earlier shared state without exchanging the server certificate again.
+- A new full handshake, for example when resumption is unavailable, expired,
+  or declined: certificate authentication happens again.
+There is no universal "check every five minutes" rule. New connections may
+be needed after idle closure, network changes, or server/client closure.
+Each encrypted record still receives integrity protection. Existing TLS
+connections do not redo certificate validation for every request.
+Source: https://www.rfc-editor.org/rfc/rfc8446.html#section-2.2
+
+Useful analogy
+DNS gives directions to the shop. A certificate is a signed ID for the shop's
+name. The private-key proof shows that the shop has the secret matching that
+ID. The browser's trusted roots are its pre-established trusted issuers.
+This analogy explains trust; the real checks use cryptographic signatures.
+
+Other clarified distinctions
+- A hostname identifies the site; its URL scheme chooses the default port.
+- A domain registration, DNS hosting, VM, and TLS certificate are different
+  resources. DuckDNS supplied a subdomain; no custom domain was purchased.
+- HTTPS protects browser-to-Nginx traffic here. The loopback hop uses HTTP.
+- Local success does not prove public routing/firewall success.
+- Service active does not prove it starts at boot; enabled does not prove the
+  application successfully recovered. Test actual public access after reboot.
+- A HEAD request (curl -I) checks response headers. A browser GET also fetches
+  content and assets. Successful HEAD is not full visual verification.
+
+20. TROUBLESHOOTING DECISION TREE
+
+Start with the smallest boundary that can fail. Inspect before changing rules.
+
+A. Can the VM serve the application locally?
+   curl -I --max-time 5 http://127.0.0.1:3000/
+   If no: check systemctl status ashsovereign, journalctl, build output,
+   WorkingDirectory, ExecStart, Node path, and ss -lntp. Fix this layer first.
+
+B. Can Nginx reach it?
+   sudo nginx -t
+   sudo systemctl status nginx --no-pager
+   curl -I -H 'Host: theashsovereign.duckdns.org' http://127.0.0.1/
+   With HTTPS configured this may return a correct redirect. To test the
+   encrypted virtual host locally with its correct name:
+   curl -I --resolve theashsovereign.duckdns.org:443:127.0.0.1 https://theashsovereign.duckdns.org/
+   If no: inspect listeners, the selected server block, proxy_pass, certificate
+   configuration, and Nginx error logs. 502 commonly points to an upstream issue.
+
+C. Does the hostname resolve to the intended VM?
+   On Mac: nslookup theashsovereign.duckdns.org
+   Compare against OCI. Inspect any AAAA record if IPv6 is also configured.
+   A DNS answer alone proves neither HTTP reachability nor VM identity.
+
+D. Does local work but public access fail?
+   Inspect the attached OCI ingress rules, host iptables rule order/counters,
+   Nginx bind address, and routing. Refusal and timeout are clues, not unique
+   diagnoses. After a reboot, compare saved rules with the active rules.
+
+E. Does HTTP work but HTTPS fail?
+   Check Nginx's 443 listener, both firewall layers, nginx -t, certificate name,
+   validity and chain. Do not use curl -k to declare a certificate check passed.
+
+F. Does issuance/renewal fail?
+   Read Certbot's exact error and /var/log/letsencrypt/letsencrypt.log. For
+   HTTP-01, verify public port 80 and the challenge path. Confirm the renewal
+   timer separately from a dry run. Avoid repeated blind issuance attempts.
+
+G. Does an update or build freeze SSH?
+   Memory pressure was plausible here but not proven. The earlier SSH trace
+   connected at TCP level then timed out before the server's SSH banner; it
+   did not establish a key/authentication error. Use OCI console access for
+   recovery if all SSH sessions are frozen, then inspect memory/kernel logs.
+   Neither swap creation nor the precise failure cause was confirmed.
+   debug3 obfuscate_keystroke_timing lines are SSH-client debug messages.
+   Do not install mailutils-mh/mmh/nmh for a missing Next.js command; those
+   package suggestions concern unrelated executables named next.
+
+21. REUSING THE SETUP FOR ANOTHER APPLICATION
+
+Fill in an application-specific worksheet before adapting commands:
+- Repository URL and approved deployment branch/commit.
+- VM OS/architecture, SSH user, public address and account cost limits.
+- App directory, runtime version, absolute runtime path, build/start commands.
+- Unique systemd service name and local application port.
+- Hostname and DNS records; public HTTP/HTTPS ingress requirements.
+- Required environment variables, secrets, storage and database needs.
+- Local/public health-check URLs and last-known-working release.
+
+Reusable sequence
+1. Verify machine resources, source, and pinned runtime.
+2. Install, check, and build the actual app.
+3. Start on a loopback port and verify the app directly.
+4. Configure systemd for that runtime/path and verify service startup.
+5. Configure an Nginx virtual host proxying to that port.
+6. Match DNS to the intended server and allow web traffic through both layers.
+7. Verify public HTTP, issue TLS, and test HTTPS and redirect behavior.
+8. Test renewal and its timer; persist host firewall changes.
+9. Reboot and retest externally without manually repairing services/rules.
+10. Record exact version, evidence, known limits, and update/recovery procedure.
+
+Adaptation boundaries
+The Node and next start commands are specific to this app. A Python service
+needs its own interpreter/virtual environment/start command. Multiple apps
+can share Nginx 80/443 using hostnames while listening on different local
+ports. Inspect firewall positions instead of copying rule number 5 blindly.
+For a static-only export, a Node server may be unnecessary, but that conversion
+was not implemented here. Persistent data and database backup require their
+own design; this portfolio's lack of a database does not generalize to all apps.
+
+Operational limitations of this implementation
+One VM is a single point of failure. Updates rebuild in place with downtime.
+CI/CD, atomic releases, automated rollback, app monitoring/alerts, load
+balancing, database backup, and disaster-recovery drills were not implemented.
+An OCI monitoring-agent timer was visible, but that does not prove application
+monitoring was configured. These are future options, not completed features.
+
+22. CONFIGURATION RECORD: KNOWN EXAMPLES AND MISSING SNAPSHOTS
+
+The systemd unit in section 5 and initial HTTP Nginx block in section 6 are
+the supplied setup instructions. Later output confirmed the services worked,
+but exact final file contents and any drop-ins were not supplied. Certbot's
+final HTTPS configuration must not be invented and labeled as captured.
+
+Known effective behavior
+- Next.js bound to loopback port 3000.
+- Nginx listened on public IPv4 80 and 443.
+- HTTP redirected with 301 to the same hostname over HTTPS.
+- HTTPS homepage returned 200 after saving rules and rebooting.
+- Certbot used the certificate paths recorded in sections 8 and 11.
+
+To capture actual configuration in a future maintenance session, inspect:
+  sudo systemctl cat ashsovereign
+  sudo cat /etc/nginx/sites-available/ashsovereign
+  sudo iptables -S INPUT
+  sudo systemctl cat netfilter-persistent
+  systemctl list-timers --all
+Review/redact output before saving it to a public repository: units and
+configuration can contain credentials in other applications. Never include
+privkey.pem, ACME account keys, DNS tokens, or SSH private-key contents.
+No live capture was performed during this document expansion.
+
+A conceptual HTTPS Nginx block, NOT a captured file or replacement command:
+  server {
+      listen 443 ssl;
+      server_name YOUR_HOSTNAME;
+      ssl_certificate /etc/letsencrypt/live/YOUR_HOSTNAME/fullchain.pem;
+      ssl_certificate_key /etc/letsencrypt/live/YOUR_HOSTNAME/privkey.pem;
+      location / {
+          proxy_pass http://127.0.0.1:YOUR_APP_PORT;
+          proxy_set_header Host $host;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme;
+      }
+  }
+This only illustrates responsibilities. Preserve Certbot's actual TLS options
+and generated directives; do not replace the working file with this example.
+
+23. MILESTONES AND GIT HISTORY
+
+15 November 2026: portfolio implementation and local verification
+- Base: 8d5f0918e1463e5ace572ac12078279a4e73e887.
+- Implementation: a2ff00662ed6de8ab048fd8d659d21de1ad35722 on improve-portfolio.
+- Owner authorized pushing the source; local production/UI checks were
+  recorded separately from public deployment, which happened later.
+
+16 November 2026: manual deployment and learning
+- User accessed the Ubuntu VM, cloned the portfolio, installed its runtime,
+  and supplied successful local app output.
+- Nginx's dangling enabled-site link was repaired by creating its target.
+- Public HTTP and certificate validation initially failed at network/firewall
+  boundaries; later public HTTPS succeeded.
+- Certificate listing, simulated renewal, timer and service state were checked.
+- First reboot exposed the lost web firewall rule. Saving the corrected rules
+  and rebooting again produced public HTTP 301 and HTTPS 200.
+- Final supplied post-reboot responses were dated 14:00:47 UTC / 19:30:47 IST.
+
+Repository publication
+- GitHub main already contained merge commit 38bd478 (PR #1) when documentation
+  publication began; this was discovered by fetch, not performed in this chat.
+- a662f5d74add8edc4d8d03c8565b0b1b979815a1 added the initial deployment guide,
+  README link, and handoff update to main; the remote hash was verified.
+- This expansion continues that documentation. Resolve its commit from Git
+  history rather than embedding an invented hash before the commit exists.
+- The existing local/VM deployment branch was improve-portfolio. Publishing
+  documentation on main does not switch or update the running VM checkout.
+  Select and verify the intended branch before later application deployments.
+- Earlier requests to return side-chat notes to the main chat meant context
+  transfer. Only the later explicit commit/push request authorized Git writes.
+
+24. OPEN ITEMS AND WHERE THE DETAILED EVIDENCE LIVES
+
+Open or unverified
+- Public case-study response, browser rendering, images, keyboard use and links.
+- Anonymous resume availability, canonical URL and sharing-image metadata.
+- Actual final configuration snapshots and exact OCI ingress configuration.
+- DuckDNS token rotation after its exposure; never retain the exposed value.
+- Future unattended production certificate renewal and ongoing availability.
+- Actual OCI billing/free-tier eligibility, OS/resource inventory on the latest
+  instance, and the cause of the earlier build-time SSH freeze.
+- A deeper independent-project case study and owner-written personal reflection,
+  if the owner chooses to add them. No fabricated claims or measurements.
+
+Documentation map (paths relative to repository root)
+- README.md: project entry point and local commands.
+- docs/ASHSOVEREIGN-DEPLOYMENT-GUIDE.txt: this consolidated record/runbook.
+- docs/CODE-MAP.md: component ownership and implementation extension guide.
+- docs/PORTFOLIO-HANDOFF.md: chronological implementation choices and checks.
+- docs/portfolio-vision-and-hiring-assessment.md: original intent, hiring
+  assessment, effort estimates, scope, and deferred ideas.
+- docs/verification/*.json: saved local verification and audit evidence.
+- src/content/portfolio.ts: current identity and destination values.
+- src/content/case-studies.tsx: the public-facing case-study narrative.
+
+Record-keeping rule
+Update facts when new evidence arrives; keep dates, provenance, and historical
+failures clearly labeled. Preserve reproducible commands and decision reasons.
+Do not turn suggested steps into completed work, simulations into production
+results, or reachability checks into broad reliability/security claims.
+
 References
 Repository runtime and scripts: .nvmrc and package.json in the checkout.
 Certbot installation, Nginx integration, and renewal:
 https://certbot.eff.org/instructions?ws=nginx&os=snap
 OCI network security rules:
 https://docs.oracle.com/en-us/iaas/Content/Network/Concepts/securityrules.htm
+
+Certificate issuance and HTTP-01:
+https://letsencrypt.org/how-it-works/
+https://letsencrypt.org/docs/challenge-types/
+TLS authentication/resumption and certificate-chain validation:
+https://www.rfc-editor.org/rfc/rfc8446.html
+https://www.rfc-editor.org/rfc/rfc5280.html
+Render web services:
+https://render.com/docs/web-services
+Firewall persistence:
+https://manpages.ubuntu.com/manpages/focal/man8/netfilter-persistent.8.html
